@@ -1,5 +1,6 @@
 from uvicorn import run
 
+
 from src import create_app
 from src.config import settings as s
 
