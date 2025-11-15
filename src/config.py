@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     VERSION: str = "v1"
     PORT: int = 8000
     API_PREFIX: str = "/api/v1"
-    ALLOWED_ORIGINS: List[str]
+    ALLOWED_ORIGINS: List[str] = ["*"]
     ALLOWED_HOSTS: List[str] = ["*"]
     ALGORITHM: str = "HS256"
     LLM_MODEL: str = "gpt-4o"
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
 
     model_config = SettingsConfigDict(
-        env_file="./server/.env", env_file_encoding="utf-8", extra="ignore"
+        env_file="./src/.env", env_file_encoding="utf-8", extra="ignore"
     )
 
 
