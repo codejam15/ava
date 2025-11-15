@@ -12,3 +12,7 @@ class MeetingResponseModel(BaseModel):
     notes: str
     group_feedback: str
 
+
+
+
+# print(teams_message_template) # Use this line to see the final output
