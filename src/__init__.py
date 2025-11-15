@@ -18,8 +18,8 @@ async def lifespan(app: FastAPI):
 
 def create_app():
     app = FastAPI(
-        title="Teacher Craft API",
-        description="Backend for the Teacher Craft application",
+        title="AVA (Agile Virtual Assistant)",
+        description="An AI-powered virtual assistant designed to enhance productivity and streamline tasks.",
         version=s.VERSION,
         docs_url=f"{s.API_PREFIX}/docs",
         openapi_url=f"{s.API_PREFIX}/openapi.json",
