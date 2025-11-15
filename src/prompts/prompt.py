@@ -5,9 +5,9 @@ from pydantic import BaseModel
 
 class TranscriptPromptModel(BaseModel):
     transcript: str
-    attendees: str
-    meeting_date: str
-    meeting_time: str
+    # attendees: str
+    # meeting_date: str
+    # meeting_time: str
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -27,7 +27,6 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         You are an expert Scrum Master and Agile facilitator. You will be given:
         1. A raw meeting transcript.
         2. Metadata about the meeting (title, date, time, attendees, agenda).
-        3. Any additional notes provided by the caller.
 
         Your job is to:
         A. Analyze the transcript deeply to identify discussions, decisions, blockers, action items, risks, and next steps.
@@ -42,7 +41,6 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         {data.transcript}
 
         **Meeting Metadata:**
-        - Title: <Meeting title here/> 
         - Date: {data.meeting_date}
         - Time: {data.meeting_time}
         - Attendees: {data.attendees}
@@ -50,6 +48,8 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         ====================
         ### OUTPUT REQUIREMENTS
         ====================
+        
+        This is wrong we're not output html we're gonna output the things individually
 
         ## 1. Confluence Page (HTML)
         Produce **only valid HTML**, clean and readable.  

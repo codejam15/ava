@@ -21,6 +21,10 @@ class Settings(BaseSettings):
     # API Keys
     OPENAI_API_KEY: str
 
+    # Bot Configuration
+    APP_ID: str
+    APP_PASSWORD: str
+
     model_config = SettingsConfigDict(
         env_file="./src/.env", env_file_encoding="utf-8", extra="ignore"
     )
