@@ -1,0 +1,19 @@
+[project]
+name = "ava"
+version = "0.1.0"
+description = "AVA (Agile Virtual Assistant)"
+authors = [
+    {name = "Julien Coulombe-Morency",email = "hello@juliencm.dev"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.13 <4.0"
+dependencies = [
+    "fastapi (>=0.121.2,<0.122.0)",
+    "pydantic-ai (>=1.18.0,<2.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
