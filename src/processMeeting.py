@@ -1,7 +1,7 @@
 from models import agent
 from models import responsemodel
 
-def callLLM(prompt: str)->responsemodel.GroupResponseModel:
+def callLLM(prompt: str)->responsemodel.MeetingResponseModel:
     return agent.llm.run_sync(prompt).output
 
 def processTranscript(prompt : str):

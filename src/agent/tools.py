@@ -1,0 +1,15 @@
+def buildTeamsSummaryMessage(groupSummary: str):
+    return f"""
+    ## 🤖 Scrum Master Feedback & Meeting Takeaways
+
+    Hello Team,
+
+    Thanks for the focused project sync today. I've analyzed the transcript and compiled some key takeaways and constructive feedback, focusing on our Agile practices.
+
+    ### 📝 Group Feedback Summary:
+
+    {groupSummary}
+
+    Best regards,
+    Your AI Scrum Master
+    """

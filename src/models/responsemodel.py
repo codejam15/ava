@@ -1,14 +1,14 @@
 from pydantic import BaseModel
 
 # This model is for confluence page
-class BaseMeetingResponseModel(BaseModel):
-    meeintg_id: str
+class MeetingResponseModel(BaseModel):
     title: str
     meeting_date: str
-    actionable: bool
-    attendees: list[str]
-    summary: str
-
-# This model is used for teams message
-class GroupResponseModel(BaseMeetingResponseModel):
+    meeting_time: str
+    attendees: str
+    updates: str
+    roadblocks: str
+    nextsteps: str
+    notes: str
     group_feedback: str
+
