@@ -42,7 +42,11 @@ class MeetingTranscript(SQLModel, table=True):
     created_at: datetime = Field(default_factory=nowutc)
 
 
-# Confluence Summaries
+class MeetingSummary(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    meeting_id: uuid.UUID = Field(foreign_key="meeting.id")
+    summary_text: str
+    created_at: datetime = Field(default_factory=nowutc)
 
 
 class FeedbackEvent(SQLModel, table=True):
@@ -57,7 +61,7 @@ class FeedbackResponse(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     feedback_id: uuid.UUID = Field(foreign_key="feedbackevent.id")
     responder_id: uuid.UUID = Field(foreign_key="user.id")
-    response_text: Optional[str] = None
+    response_text: str
     created_at: datetime = Field(default_factory=nowutc)
 
 
