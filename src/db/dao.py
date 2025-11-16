@@ -1,7 +1,7 @@
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from db.schema import (
+from .schema import (
     FeedbackEvent,
     FeedbackResponse,
     Meeting,
@@ -11,18 +11,18 @@ from db.schema import (
     Team,
     User,
 )
-from models.feedback import (
+from ..models.feedback import (
     FeedbackEventCreateRequest,
     FeedbackResponseCreateRequest,
     PersonalityProfileCreateRequest,
     PersonalityProfileUpdateRequest,
 )
-from models.meeting import (
+from ..models.meeting import (
     MeetingCreateRequest,
     MeetingSummaryCreateRequest,
     MeetingTranscriptCreateRequest,
 )
-from models.team import TeamCreateRequest, UserCreateRequest
+from ..models.team import TeamCreateRequest, UserCreateRequest
 
 
 class UserDao:

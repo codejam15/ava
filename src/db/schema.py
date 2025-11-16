@@ -22,7 +22,8 @@ class User(SQLModel, table=True):
 class Team(SQLModel, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     name: str = Field(unique=True, index=True)
-    created_at: datetime = Field(default_factory=nowutc)
+    space_id: str
+    parent_id: str
 
 
 class Meeting(SQLModel, table=True):
