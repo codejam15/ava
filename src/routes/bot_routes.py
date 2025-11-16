@@ -1,11 +1,15 @@
 from datetime import date, datetime, timedelta, timezone
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic_ai import AgentRunResult
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from src.agent import summary_agent
+from src.agent import FeedbackDependecies, feedback_agent, summary_agent
 from src.agent.prompt import TranscriptPrompt, TranscriptPromptModel
 from src.agent.tools import buildTeamsFeedbackMessage
+from src.db import get_session
+from src.db.dao import MeetingTranscriptDAO, PersonalityProfileDAO, UserDao
+from src.models.feedback import FeedbackEventModel
 from src.models.meeting import MeetingResponseModel
 from src.routes.confluence_routes import createPage
 from src.routes.test_transcript import transcript
@@ -37,3 +41,26 @@ async def team_summary_endpoint():
 
     # return this message
     return teams_message
+
+
+@router.get("/feedbacksummary/{username}")
+async def feedback_summary_endpoint(
+    username: str, session: AsyncSession = Depends(get_session)
+):
+    user_dao = UserDao(session)
+    personality_profile_dao = PersonalityProfileDAO(session)
+    transcript_dao = MeetingTranscriptDAO(session)
+
+    deps = FeedbackDependecies(
+        username=username,
+        personality_profile_dao=personality_profile_dao,
+        user_dao=user_dao,
+        transcript_dao=transcript_dao,
+    )
+
+    response: AgentRunResult[FeedbackEventModel] = await feedback_agent.run(
+        "Based on the transcript of the last meeting, provide constructive personalised 1-on-1 feedback to team member. Your feedback should focus on areas such as communication skills, collaboration, clarity, and overall contribution to the meeting. Adapt your tone to the person personality profile. Keep this feedback concise and actionable.",
+        deps=deps,
+    )
+
+    return response.output

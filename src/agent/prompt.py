@@ -54,19 +54,3 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         Remember to be constructive when providing team feedback.
         
         """
-
-
-class FeedbackPrompt(BasePrompt[FeedbackPromptModel]):
-    @override
-    def _prompt(self, data: FeedbackPromptModel) -> str:
-        return f"""
-        Based on the transcript of the meeting below, provide constructive feedback to the team member with
-        the following user ID: {data.target_user_id}.
-
-        **Transcript**
-        {data.transcript}
-
-        Your feedback should focus on areas such as communication skills, collaboration, clarity, and overall contribution to the meeting.
-
-        Adapt your tone to the person personality profile.
-        """
