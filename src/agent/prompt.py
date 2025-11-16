@@ -35,6 +35,7 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         **Meeting Metadata**
         - Date: {data.meeting_date}
         - Time: {data.meeting_time}
+        - Attendees: {data.attendees}
 
         Output must your answer using the to the following schema:
     
@@ -42,7 +43,7 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         "title:": Title for the meeting minutes,
         "meeting_date": Date of the meeting,
         "meeting_time": Duration of the meeting (including start/end time),
-        "attendees": Parse the transcript to extract the list of attendees,
+        "attendees": Attendees of the meeting, formatted nicely (ignore user ids, only include names),
         "updates": Any relevant updates that can be derived from the transcript, if making a list use HTML unordered list format,
         "roadblocks": Any important roadblocks that can be derived from the transcript, if making a list use HTML unordered list format,
         "nextsteps": Any future plans that can be derived from the transcript, if making a list use HTML unordered list format,

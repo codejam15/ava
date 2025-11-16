@@ -8,22 +8,21 @@ from src.models.meeting import MeetingResponseModel
 
 def build_team_feedback_message(url: str, group_feedback: str):
     return f"""
-    ## 🤖 Scrum Master Feedback & Meeting Takeaways
+🤖 **Scrum Master Feedback & Meeting Takeaways**
 
-    Hello Team,
+Hello Team,
 
-    Thanks for the focused project sync today. I've analyzed the transcript and compiled some key takeaways and constructive feedback, focusing on our Agile practices.
+Thanks for the productive sync today! I've reviewed the meeting recording and analyzed the transcript to summarize the key takeaways below.
 
-    Here is the Link to the Confluence page :
+**📄 Confluence Meeting Notes:**  
+https://zaatarfluence.atlassian.net/wiki/spaces/MFS/pages/66217/Meeting+of+November+16+2025+00+00+00
 
-    {url}
+### 📝 **Group Feedback**
+{group_feedback}
 
-    ### 📝 Group Feedback:
 
-    {group_feedback}
-
-    Best regards,
-    Your AI Scrum Master
+Best regards,  
+**Ava, Your AI Scrum Master**
     """
 
 
