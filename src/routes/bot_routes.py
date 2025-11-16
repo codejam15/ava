@@ -1,4 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
+import uuid
 
 from fastapi import APIRouter, Depends
 from pydantic_ai import AgentRunResult
@@ -11,8 +12,13 @@ from src.db import get_session
 from src.db.dao import MeetingTranscriptDAO, PersonalityProfileDAO, UserDao
 from src.models.feedback import FeedbackEventModel
 from src.models.meeting import MeetingResponseModel
+from src.models.team import TeamCreateRequest, UserCreateRequest
+from src.models.feedback import PersonalityProfileCreateRequest, PersonalityProfileUpdateRequest
 from src.routes.confluence_routes import createPage
 from src.routes.test_transcript import transcript
+from src.db.dao import TeamDao, UserDao, PersonalityProfileDAO
+from sqlmodel.ext.asyncio.session import AsyncSession
+from src.db.schema import Team, User, PersonalityProfile
 
 router = APIRouter()
 
@@ -64,3 +70,40 @@ async def feedback_summary_endpoint(
     )
 
     return response.output
+
+@router.post("/init")
+async def team_init_endpoint(request: TeamCreateRequest,
+                            session: AsyncSession = Depends(get_session)) -> Team:
+    dao = TeamDao(session)
+    created_team = await dao.insert_team(request)
+    return created_team
+
+
+@router.post("/user")
+async def add_user_endpoint(user_info: UserCreateRequest,
+                             session: AsyncSession = Depends(get_session)) -> User:
+    user_dao: UserDao= UserDao(session)
+    user: User = await user_dao.insert_user(user_info)
+    return user
+
+@router.delete("/user{username}")
+async def delete_user_endpoint(username: str,
+                               session: AsyncSession = Depends(get_session)) -> None:
+    user_dao: UserDao = UserDao(session)
+    await user_dao.delete_user(username)
+
+
+@router.post("/personality")
+async def add_personality_endpoint(personality_info: PersonalityProfileCreateRequest,
+                                   session: AsyncSession = Depends(get_session)) -> PersonalityProfile:
+    personality_dao: PersonalityProfileDAO = PersonalityProfileDAO(session)
+    personality: PersonalityProfile = await personality_dao.insert_profile(personality_info)
+    return personality
+
+
+@router.put("/personality/{personality_id}")
+async def update_personality_endpoint(personality_id: str, personality_update: PersonalityProfileUpdateRequest,
+                                      session: AsyncSession = Depends(get_session))-> PersonalityProfile:
+    personality_dao: PersonalityProfileDAO = PersonalityProfileDAO(session)
+    personality: PersonalityProfile = await personality_dao.update_profile(personality_id, personality_update)
+    return personality

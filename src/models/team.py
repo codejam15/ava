@@ -6,6 +6,8 @@ from pydantic import BaseModel, EmailStr
 
 class TeamCreateRequest(BaseModel):
     name: str
+    space_id: str
+    parent_id: str
 
 
 class UserCreateRequest(BaseModel):
