@@ -16,7 +16,19 @@ intents.message_content = True  # To read the content of messages
 client = discord.Client(intents=intents)
 
 # --- Bot Events ---
-
+ 
+async def send_personalized_feedback(id:int, message: str):
+    user = client.get_user(id)
+    if user == None:
+        print("Could not fined user")
+    else:
+        try:
+            await user.send(message)
+            print(f"Sent DM to {user.name}")
+        except discord.Forbidden:
+            print(f"Could not send DM to  {user.name} They might have DMs disabled.")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 
 async def post_meeting_minutes(meeting_minutes: str):
 
