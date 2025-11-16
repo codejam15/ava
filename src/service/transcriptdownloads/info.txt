@@ -1,10 +1,9 @@
-Recording 6JE4ie8PA6VzsvXCFAyHb1nXXC9VCE
+Recording hXUUyACrL0gskPu0qoDju-1KI-aoBf
 
 Guild:		Zaatarch Linux (1439387259999617056)
 Channel:	General (1439387260658126911)
 Requester:	crashius#0 (485920575152455691)
-Start time:	2025-11-15T23:58:38.478Z
+Start time:	2025-11-16T16:06:05.407Z
 
 Tracks:
-	crosscutgymnast#0 (183562124419792896)
 	crashius#0 (485920575152455691)

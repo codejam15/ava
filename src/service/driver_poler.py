@@ -155,11 +155,13 @@ def process_changes(creds, changes):  # <-- ADDED 'creds'
                     "transcript": transcript,
                     "start_time": start_time,
                     "team_name": team_name,
-                    "attendees": attendees
+                    "attendees": attendees,
                 }
 
                 # Needs to be a request.
-                requests.post(f"http://localhost:8000/generateminutes", json=request_body)
+                requests.post(
+                    "http://localhost:8000/api/generateminutes", json=request_body
+                )
 
                 # ----------------------------
 

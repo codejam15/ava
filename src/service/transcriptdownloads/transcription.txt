@@ -1,13 +1,1 @@
-crosscutgymnast: Hello,
-
-crash: Hello.
-
-crash: Test.
-
-crosscutgymnast: this is the time.
-
-crash: This is a sample recording.
-
-crosscutgymnast: So today I have... And yes, I hate Microsoft.
-
-crash: Yeah, true. Okay, that's the end of it.
+crash: Transcript one two three

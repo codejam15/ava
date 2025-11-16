@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import UTC, datetime
 
 import requests
 
@@ -28,7 +28,6 @@ def build_team_feedback_message(url: str, group_feedback: str):
 
 
 def post_confluence_page(team: Team, model: MeetingResponseModel) -> str:
-    today = date.today()
     # --- Confluence API info ---
     base_url = "https://zaatarfluence.atlassian.net/wiki/api/v2/pages"
     auth = (
@@ -39,7 +38,9 @@ def post_confluence_page(team: Team, model: MeetingResponseModel) -> str:
 
     space_id: str = team.space_id
     parent_id: str = team.parent_id
-    page_title: str = "Meeting of " + today.strftime("%B %d, %Y")
+
+    today = datetime.now(UTC)
+    page_title: str = f"Meeting of {today.strftime("%B %d, %Y %H:%M:%S")}"
 
     # --- Meeting info ---
 
