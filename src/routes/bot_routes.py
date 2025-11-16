@@ -1,40 +1,39 @@
+from datetime import date, datetime, timedelta, timezone
+
 from fastapi import APIRouter
 from pydantic_ai import AgentRunResult
 
-from src.agent.tools import buildTeamsSummaryMessage
-from src.models.responsemodel import MeetingResponseModel
-from src.models.transcript import MeetingTranscript
+from src.agent import llm
 from src.agent.prompt import TranscriptPrompt, TranscriptPromptModel
-from src.agent.agent import llm
-from confluence_routes import createPage
+from src.agent.tools import buildTeamsFeedbackMessage
+from src.models.meeting import MeetingResponseModel
+from src.routes.confluence_routes import createPage
+from src.routes.test_transcript import transcript
 
-bot_router = APIRouter();
+router = APIRouter()
 
 
-@bot_router.post("/teamsummary")
-async def teamSummary(transcript: str):
-    # Build/get the prompt to send to the llm, we have transcript already
-    data = {
-        "transcript": transcript
-    }
+@router.get("/teamsummary")
+async def team_summary_endpoint():
+    # async def teamSummary(transcript: str, start_time: datetime) -> str:
+    start_time = datetime.now(timezone.utc) - timedelta(hours=1)
+    end_time = datetime.now(timezone.utc)
 
-    prompt = TranscriptPrompt.generate_prompt(TranscriptPromptModel(**data))  
+    prompt = TranscriptPrompt.generate_prompt(
+        TranscriptPromptModel(
+            transcript=transcript,
+            meeting_date=date.fromtimestamp(start_time.timestamp()).isoformat(),
+            meeting_time=f"{start_time.isoformat()} to {end_time.isoformat()}",
+        )
+    )
 
-    response: AgentRunResult[MeetingResponseModel] = llm.run_sync(prompt)
+    response: AgentRunResult[MeetingResponseModel] = await llm.run(prompt)
 
     # call daniel's method which will make the confluence page and it will return the url
     url = createPage(response.output)
 
     # call my function which will take the url and the summary from the llm response and build the teams message
-    teams_message = buildTeamsSummaryMessage(url,response.output.group_feedback)
-
+    teams_message = buildTeamsFeedbackMessage(url, response.output.group_feedback)
 
     # return this message
     return teams_message
-
-
-
-
-
-
-

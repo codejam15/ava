@@ -13,13 +13,23 @@ class MeetingCreateRequest(BaseModel):
     external_meeting_id: Optional[str] = None
 
 
-class ConfluenceTemplateResponse(BaseModel):
-    meeintg_id: str
+class MeetingResponseModel(BaseModel):
     title: str
     meeting_date: str
-    summary: str
-    actionable: bool
-    attendees: list[str]
+    meeting_time: str
+    attendees: str
+    updates: str
+    roadblocks: str
+    nextsteps: str
+    notes: str
+    group_feedback: str
+
+
+class TranscriptPromptModel(BaseModel):
+    transcript: str
+    meeting_date: str
+    meeting_time: str
+    attendees: Optional[str] = None
 
 
 class MeetingSummaryCreateRequest(BaseModel):
