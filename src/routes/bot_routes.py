@@ -6,6 +6,7 @@ from src.models.responsemodel import MeetingResponseModel
 from src.models.transcript import MeetingTranscript
 from src.agent.prompt import TranscriptPrompt, TranscriptPromptModel
 from src.agent.agent import llm
+from confluence_routes import createPage
 
 bot_router = APIRouter();
 
@@ -22,10 +23,10 @@ async def teamSummary(transcript: str):
     response: AgentRunResult[MeetingResponseModel] = llm.run_sync(prompt)
 
     # call daniel's method which will make the confluence page and it will return the url
-
+    url = createPage(response.output)
 
     # call my function which will take the url and the summary from the llm response and build the teams message
-    teams_message = buildTeamsSummaryMessage(response.output.group_feedback)
+    teams_message = buildTeamsSummaryMessage(url,response.output.group_feedback)
 
 
     # return this message
