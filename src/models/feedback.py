@@ -1,25 +1,37 @@
 import uuid
-from typing import Optional
 
-from pydantic import BaseModel
-
-
-class FeedbackEventCreateRequest(BaseModel):
-    meeting_id: uuid.UUID
-    target_user_id: uuid.UUID
-    feedback_text: str
+from pydantic import BaseModel, Field
 
 
-class FeedbackResponseCreateRequest(BaseModel):
-    feedback_id: uuid.UUID
-    responder_id: uuid.UUID
-    response_text: str
+class FeedbackPromptModel(BaseModel):
+    transcript: str = Field(description="The full transcript of the meeting.")
+    target_user_id: uuid.UUID = Field(
+        description="The unique identifier of the user to provide feedback for."
+    )
 
 
-class PersonalityProfileCreateRequest(BaseModel):
-    user_id: uuid.UUID
-    summary: str
+class FeedbackEventModel(BaseModel):
+    meeting_id: uuid.UUID = Field(description="The unique identifier of the meeting.")
+    target_id: uuid.UUID = Field(
+        description="The unique identifier of the user to provide feedback for."
+    )
+    text: str = Field(
+        description="The constructive feedback text provided to the user."
+    )
 
 
-class PersonalityProfileUpdateRequest(BaseModel):
-    summary: Optional[str] = None
+class FeedbackResponseModel(BaseModel):
+    feedback_id: uuid.UUID = Field(description="The unique identifier of the feedback.")
+    issuer_id: uuid.UUID = Field(
+        description="The unique identifier of the user who provided the feedback."
+    )
+    text: str = Field(
+        description="The response text from the user who received the feedback."
+    )
+
+
+class PersonalityProfileModel(BaseModel):
+    user_id: uuid.UUID = Field(description="The unique identifier of the user.")
+    summary: str = Field(
+        description="A brief summary of the user's personality, this is based on analysis of their previous responses to feedback."
+    )

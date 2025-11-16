@@ -3,7 +3,7 @@ from datetime import date, datetime, timedelta, timezone
 from fastapi import APIRouter
 from pydantic_ai import AgentRunResult
 
-from src.agent import llm
+from src.agent import summary_agent
 from src.agent.prompt import TranscriptPrompt, TranscriptPromptModel
 from src.agent.tools import buildTeamsFeedbackMessage
 from src.models.meeting import MeetingResponseModel
@@ -27,7 +27,7 @@ async def team_summary_endpoint():
         )
     )
 
-    response: AgentRunResult[MeetingResponseModel] = await llm.run(prompt)
+    response: AgentRunResult[MeetingResponseModel] = await summary_agent.run(prompt)
 
     # call daniel's method which will make the confluence page and it will return the url
     url = createPage(response.output)

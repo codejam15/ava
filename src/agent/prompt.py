@@ -3,6 +3,7 @@ from typing import Generic, TypeVar, override
 
 from pydantic import BaseModel
 
+from src.models.feedback import FeedbackPromptModel
 from src.models.meeting import TranscriptPromptModel
 
 T = TypeVar("T", bound=BaseModel)
@@ -29,10 +30,10 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         B. Generate a **clean, structured, Confluence-ready HTML page** for meeting minutes.
         C. Generate **Scrum-focused qualitative feedback** for the group based on the meeting's tone, clarity, focus, and collaboration.
 
-        ### Transcript:
+        **Transcript**
         {data.transcript}
 
-        #### Meeting Metadata:
+        **Meeting Metadata**
         - Date: {data.meeting_date}
         - Time: {data.meeting_time}
 
@@ -49,5 +50,23 @@ class TranscriptPrompt(BasePrompt[TranscriptPromptModel]):
         "notes": Any other relevant notes for the meeting that can be derived from the transcript and that are not part of updates, roadblocks or nextsteps, if making a list use HTML unordered list format,
         "group_feedback": This should be a short paragraph including some general feedback for the team, and any actionable insights the team should act on.
         }}
+
+        Remember to be constructive when providing team feedback.
         
+        """
+
+
+class FeedbackPrompt(BasePrompt[FeedbackPromptModel]):
+    @override
+    def _prompt(self, data: FeedbackPromptModel) -> str:
+        return f"""
+        Based on the transcript of the meeting below, provide constructive feedback to the team member with
+        the following user ID: {data.target_user_id}.
+
+        **Transcript**
+        {data.transcript}
+
+        Your feedback should focus on areas such as communication skills, collaboration, clarity, and overall contribution to the meeting.
+
+        Adapt your tone to the person personality profile.
         """
