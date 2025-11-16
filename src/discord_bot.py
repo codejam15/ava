@@ -67,18 +67,3 @@ async def on_message(message):
 
         except Exception as e:
             print(f"An error occurred {e}")
-
-
-# # --- Run the Bot ---
-#
-# if __name__ == "__main__":
-#     try:
-#         if BOT_TOKEN is None:
-#             raise Exception
-#
-#         client.run(BOT_TOKEN)
-#     except discord.errors.LoginFailure:
-#         print("Error: Invalid or improper token provided.")
-#         print("Please make sure your DISCORD_TOKEN is correct.")
-#     except Exception as e:
-#         print(f"An error occurred while starting the bot: {e}")
