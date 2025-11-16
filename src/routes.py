@@ -12,7 +12,7 @@ from src.agent.tools import build_team_feedback_message, post_confluence_page
 from src.db import get_session
 from src.db.dao import MeetingTranscriptDAO, PersonalityProfileDAO, TeamDao, UserDao
 from src.db.schema import PersonalityProfile, Team, User
-from src.discord_bot import post_meeting_minutes
+from src.discord_bot import post_meeting_minutes, send_personalized_feedback
 from src.models.feedback import FeedbackEventModel, PersonalityProfileModel
 from src.models.meeting import MeetingResponseModel
 from src.models.team import TeamCreateRequest, UserCreateRequest
@@ -60,6 +60,26 @@ async def generate_meeting_minutes(
 
     # post the messages to teams with the bot
     await post_meeting_minutes(teams_message)
+
+    # user_dao = UserDao(session)
+    # personality_profile_dao = PersonalityProfileDAO(session)
+    # transcript_dao = MeetingTranscriptDAO(session)
+    #
+    # username = "crosscutgymnast"
+    #
+    # deps = FeedbackDependecies(
+    #     username=username,
+    #     personality_profile_dao=personality_profile_dao,
+    #     user_dao=user_dao,
+    #     transcript_dao=transcript_dao,
+    # )
+    #
+    # res: AgentRunResult[FeedbackEventModel] = await feedback_agent.run(
+    #     "Based on the transcript of the last meeting, provide constructive personalised 1-on-1 feedback to team member. Your feedback should focus on areas such as communication skills, collaboration, clarity, and overall contribution to the meeting. Adapt your tone to the person personality profile. Keep this feedback concise and actionable.",
+    #     deps=deps,
+    # )
+    #
+    # await send_personalized_feedback(183562124419792896, res.output.text)
 
 
 @router.post("/init")
