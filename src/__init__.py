@@ -4,9 +4,9 @@ from fastapi import Depends, FastAPI
 
 from src.config import settings as s
 from src.middlewares import register_middlewares
-from src.routes import bot
+from src.routes import bot, bot_routes
+from src.routes.bot_routes import router
 
-from src.routes.bot_routes import bot_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -32,5 +32,8 @@ def create_app():
 
     # Register routers here.
     app.include_router(bot.router, prefix=f"{s.API_PREFIX}/bot", tags=["bot"])
+    app.include_router(
+        bot_routes.router, prefix=f"{s.API_PREFIX}/transcript", tags=["processing"]
+    )
 
     return app

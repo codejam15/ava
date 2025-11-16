@@ -1,4 +1,4 @@
-def buildTeamsSummaryMessage(url:str,groupSummary: str):
+def buildTeamsFeedbackMessage(url: str, group_feedback: str):
     return f"""
     ## 🤖 Scrum Master Feedback & Meeting Takeaways
 
@@ -10,9 +10,9 @@ def buildTeamsSummaryMessage(url:str,groupSummary: str):
 
     {url}
 
-    ### 📝 Group Feedback Summary:
+    ### 📝 Group Feedback:
 
-    {groupSummary}
+    {group_feedback}
 
     Best regards,
     Your AI Scrum Master

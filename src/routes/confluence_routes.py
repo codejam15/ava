@@ -1,9 +1,11 @@
-import requests
-from ..models.responsemodel import MeetingResponseModel
 from datetime import date
 
+import requests
 
-def createPage(model: MeetingResponseModel) -> str :
+from src.models.meeting import MeetingResponseModel
+
+
+def createPage(model: MeetingResponseModel) -> str:
     today = date.today()
     # --- Confluence API info ---
     base_url = "https://zaatarfluence.atlassian.net/wiki/api/v2/pages"
@@ -14,7 +16,7 @@ def createPage(model: MeetingResponseModel) -> str :
     space_key = "MFS"
     space_id: str = "65702"
     parent_id: str = "360497"
-    page_title: str = "Meeting of" + today.strftime("%B %d, %Y")
+    page_title: str = "Meeting of " + today.strftime("%B %d, %Y")
 
     # --- Meeting info ---
 
@@ -34,7 +36,6 @@ def createPage(model: MeetingResponseModel) -> str :
     <p>{model.notes}</p>
 """
 
-   
     print(html_template)
     # --- Prepare payload ---
     payload = {
@@ -49,9 +50,9 @@ def createPage(model: MeetingResponseModel) -> str :
     response = requests.post(base_url, auth=auth, json=payload)
     # --- Output result ---
     if response.status_code == 200 or response.status_code == 201:
-        data=response.json()
+        data = response.json()
         print("Page created successfully!")
-        url = data["link"]["base"]+data["links"]["webui"]
+        url = data["_links"]["base"] + data["_links"]["webui"]
         return url
     else:
         print("Error creating page:", response.status_code)
