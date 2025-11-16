@@ -1,12 +1,5 @@
 import discord
 from discord.channel import TextChannel
-from dotenv import load_dotenv 
-import os
-
-
-load_dotenv()
-
-BOT_TOKEN = os.getenv('BOT_TOKEN')
 
 CHANNEL_ID = 0
 
@@ -24,11 +17,12 @@ client = discord.Client(intents=intents)
 
 # --- Bot Events ---
 
-async def post_meetingminutes(meeting_minutes: str):
+
+async def post_meeting_minutes(meeting_minutes: str):
 
     # channel id
     channel = client.get_channel(CHANNEL_ID)
- 
+
     if channel and isinstance(channel, TextChannel):
         try:
             await channel.send(meeting_minutes)
@@ -42,8 +36,9 @@ async def on_ready():
     """
     This event is triggered when the bot successfully connects to Discord.
     """
-    print(f'Bot is ready! Logged in as {client.user}')
-    print('-------------------------------------------')
+    print(f"Bot is ready! Logged in as {client.user}")
+    print("-------------------------------------------")
+
 
 @client.event
 async def on_message(message):
@@ -58,30 +53,32 @@ async def on_message(message):
 
     if message.content == "!postminutes":
         try:
-            await post_meetingminutes("Hello these are meeting minutes")
+            await post_meeting_minutes("Hello these are meeting minutes")
         except Exception as e:
             print(f"There was an error {e}")
 
-
     if message.content == "!setmeetingchannel":
         try:
-            id = message.channel.id 
+            id = message.channel.id
             CHANNEL_ID = id
-            await message.channel.send(f"Successfully set Ava's server to {message.channel.name}")
+            await message.channel.send(
+                f"Successfully set Ava's server to {message.channel.name}"
+            )
 
         except Exception as e:
             print(f"An error occurred {e}")
 
-# --- Run the Bot ---
 
-if __name__ == "__main__":
-    try:
-        if BOT_TOKEN is None:
-            raise Exception
-
-        client.run(BOT_TOKEN)
-    except discord.errors.LoginFailure:
-        print("Error: Invalid or improper token provided.")
-        print("Please make sure your DISCORD_TOKEN is correct.")
-    except Exception as e:
-        print(f"An error occurred while starting the bot: {e}")
+# # --- Run the Bot ---
+#
+# if __name__ == "__main__":
+#     try:
+#         if BOT_TOKEN is None:
+#             raise Exception
+#
+#         client.run(BOT_TOKEN)
+#     except discord.errors.LoginFailure:
+#         print("Error: Invalid or improper token provided.")
+#         print("Please make sure your DISCORD_TOKEN is correct.")
+#     except Exception as e:
+#         print(f"An error occurred while starting the bot: {e}")

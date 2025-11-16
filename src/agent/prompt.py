@@ -3,7 +3,6 @@ from typing import Generic, TypeVar, override
 
 from pydantic import BaseModel
 
-from src.models.feedback import FeedbackPromptModel
 from src.models.meeting import TranscriptPromptModel
 
 T = TypeVar("T", bound=BaseModel)

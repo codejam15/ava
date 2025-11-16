@@ -1,5 +1,5 @@
 import uuid
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends
 from pydantic_ai import AgentRunResult
@@ -7,21 +7,26 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from src.agent import FeedbackDependecies, feedback_agent, summary_agent
 from src.agent.prompt import TranscriptPrompt, TranscriptPromptModel
-from src.agent.tools import buildTeamsFeedbackMessage
-from src.bot.main import post_meetingminutes
+from src.agent.tools import build_team_feedback_message, post_confluence_page
 from src.db import get_session
 from src.db.dao import MeetingTranscriptDAO, PersonalityProfileDAO, TeamDao, UserDao
 from src.db.schema import PersonalityProfile, Team, User
+from src.discord_bot import post_meeting_minutes
 from src.models.feedback import FeedbackEventModel, PersonalityProfileModel
 from src.models.meeting import MeetingResponseModel
 from src.models.team import TeamCreateRequest, UserCreateRequest
-from src.routes.confluence_routes import createPage
-from src.routes.test_transcript import transcript
 
 router = APIRouter()
 
 
-async def generate_meetingminutes(transcript: str, start_time, attendees: dict[str, str]):
+@router.post("/generate/{team_name}")
+async def generate_meeting_minutes(
+    transcript: str,
+    start_time,
+    attendees: dict[str, str],
+    team_name: str,
+    session: AsyncSession = Depends(get_session),
+):
     end_time = datetime.now(timezone.utc)
 
     prompt = TranscriptPrompt.generate_prompt(
@@ -39,73 +44,16 @@ async def generate_meetingminutes(transcript: str, start_time, attendees: dict[s
     team: Team | None = await team_dao.get_team_by_name(team_name)
     if team is None:
         raise Exception("team does not exist")
-    url = createPage(team, response.output)
+    url = post_confluence_page(team, response.output)
 
     # call my function which will take the url and the summary from the llm response and build the teams message
-    teams_message = buildTeamsFeedbackMessage(url, response.output.group_feedback)
+    teams_message = build_team_feedback_message(url, response.output.group_feedback)
 
-    # display this message
-
-    await post_meetingminutes(teams_message)
-    # return teams_message
+    # post the messages to teams with the bot
+    await post_meeting_minutes(teams_message)
 
 
-router.post("/init")
-
-
-async def team_init_endpoint(
-    request: TeamCreateRequest, session: AsyncSession = Depends(get_session)
-) -> Team:
-    dao = TeamDao(session)
-    created_team = await dao.insert_team(request)
-    return created_team
-
-
-@router.post("/user")
-async def add_user_endpoint(
-    user_info: UserCreateRequest, session: AsyncSession = Depends(get_session)
-) -> User:
-    user_dao: UserDao = UserDao(session)
-    user: User = await user_dao.insert_user(user_info)
-    return user
-
-
-@router.delete("/user{username}")
-async def delete_user_endpoint(
-    username: str, session: AsyncSession = Depends(get_session)
-) -> None:
-    user_dao: UserDao = UserDao(session)
-    await user_dao.delete_user(username)
-
-
-@router.post("/personality")
-async def add_personality_endpoint(
-    personality_info: PersonalityProfileModel,
-    session: AsyncSession = Depends(get_session),
-) -> PersonalityProfile:
-    personality_dao: PersonalityProfileDAO = PersonalityProfileDAO(session)
-    personality: PersonalityProfile = await personality_dao.insert_profile(
-        personality_info
-    )
-    return personality
-
-
-@router.put("/personality/{personality_id}")
-async def update_personality_endpoint(
-    personality_id: uuid.UUID,
-    personality_update: PersonalityProfileModel,
-    session: AsyncSession = Depends(get_session),
-) -> PersonalityProfile:
-    personality_dao: PersonalityProfileDAO = PersonalityProfileDAO(session)
-    personality: PersonalityProfile = await personality_dao.update_profile(
-        personality_id, personality_update
-    )
-    return personality
-
-
-router.post("/init")
-
-
+@router.post("/init")
 async def team_init_endpoint(
     request: TeamCreateRequest, session: AsyncSession = Depends(get_session)
 ) -> Team:

@@ -1,18 +1,19 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 
+import src.routes as r
+from src.bot.main import client
 from src.config import settings as s
 from src.middlewares import register_middlewares
-from src.routes import bot, bot_routes
-from src.routes.bot_routes import router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # NOTE: This is where you can add your own startup logic.👇
     try:
-        # bot.test_auth()
+        print("Starting up the Discord bot...")
+        # client.run(s.BOT_TOKEN)
         yield
     finally:
         ...
@@ -31,9 +32,6 @@ def create_app():
     register_middlewares(app)
 
     # Register routers here.
-    # app.include_router(bot.router, prefix=f"{s.API_PREFIX}/bot", tags=["bot"])
-    app.include_router(
-        bot_routes.router, prefix=f"{s.API_PREFIX}/transcript", tags=["processing"]
-    )
+    app.include_router(r.router, prefix=f"{s.API_PREFIX}", tags=["processing"])
 
     return app

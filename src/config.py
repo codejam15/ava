@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "AVA (Agile Virtual Assistant)"
     VERSION: str = "v1"
     PORT: int = 8000
-    API_PREFIX: str = "/api/v1"
+    API_PREFIX: str = "/api"
     ALLOWED_ORIGINS: List[str] = ["*"]
     ALLOWED_HOSTS: List[str] = ["*"]
     ALGORITHM: str = "HS256"
@@ -22,8 +22,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str
 
     # Bot Configuration
-    APP_ID: str
-    APP_PASSWORD: str
+    BOT_TOKEN: str
 
     model_config = SettingsConfigDict(
         env_file="./src/.env", env_file_encoding="utf-8", extra="ignore"

@@ -1,12 +1,10 @@
 import json
-import time
 import os  # <-- ADDED
+import time
 from datetime import datetime
 
 import requests
 from google.oauth2.credentials import Credentials
-
-from src.routes.bot_routes import generate_meetingminutes
 from unzip_functions import unzip_file
 
 TOKEN_JSON = "token.json"
@@ -100,7 +98,7 @@ def download_file(creds, file_id, filename):
 
 
 # --- MODIFIED FUNCTION ---
-def process_changes(creds, changes): # <-- ADDED 'creds'
+def process_changes(creds, changes):  # <-- ADDED 'creds'
     """Process and display the changes"""
     if not changes:
         return
@@ -121,47 +119,47 @@ def process_changes(creds, changes): # <-- ADDED 'creds'
         if trashed:
             print(f"  🗑️  DELETED: {name}")
             print(f"      File ID: {file_id}")
-            
+
         elif change_type == "file":
             # This is an add or modify event
-            
+
             # Check for Google Folders (can't be downloaded)
             if mime_type == "application/vnd.google-apps.folder":
                 print(f"  📁 FOLDER CHANGED: {name}")
                 print(f"      File ID: {file_id}")
-                
+
             # Check for Google native files (require export, not download)
             elif mime_type.startswith("application/vnd.google-apps"):
                 print(f"  📑 GOOGLE DOC/SHEET CHANGED: {name}")
                 print(f"      Type: {mime_type}")
                 print(f"      File ID: {file_id}")
-                print(f"      (Skipping download, requires 'export' API)")
-                
+                print("      (Skipping download, requires 'export' API)")
+
             # This is a standard downloadable file (e.g., PDF, TXT, JPG)
             else:
                 print(f"  📄 FILE CHANGED: {name}")
                 print(f"      Type: {mime_type}")
                 print(f"      File ID: {file_id}")
                 print(f"      Modified: {modified_time}")
-                
+
                 # --- THIS IS THE NEW PART ---
                 file_path = download_file(creds, file_id, name)
                 info = unzip_file(file_path)
-                
+
                 if info is None:
                     return None
 
                 (transcript, start_time, attendees) = info
 
-                generate_meetingminutes(transcript, start_time, attendees)
-
+                # Needs to be a request.
+                requests.get("http://localhost:8000/generate/")
+                # generate_meetingminutes(transcript, start_time, attendees)
 
                 # ----------------------------
-                
+
         else:
             print(f"  ℹ️  {change_type.upper()}: {name}")
-            print(f"      File ID: {file_id}")
-        print()
+            print(f"      File ID: {file_id}\n")
 
 
 def poll_drive_changes():
@@ -170,7 +168,7 @@ def poll_drive_changes():
     print("Google Drive Change Poller")
     print("=" * 60)
     print(f"Poll interval: {POLL_INTERVAL} seconds")
-    print(f"Files will be saved to: {os.path.abspath(DOWNLOAD_DIR)}") # <-- ADDED
+    print(f"Files will be saved to: {os.path.abspath(DOWNLOAD_DIR)}")  # <-- ADDED
     print("Press Ctrl+C to stop\n")
 
     # Load credentials
@@ -204,7 +202,7 @@ def poll_drive_changes():
 
                 if changes:
                     # --- MODIFIED CALL ---
-                    process_changes(creds, changes) # <-- Pass 'creds'
+                    process_changes(creds, changes)  # <-- Pass 'creds'
                 else:
                     print(
                         f"[{timestamp}] Poll #{poll_count}: No changes detected",
