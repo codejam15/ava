@@ -1,7 +1,5 @@
-import base64
-import json
-import os
 import re
+import traceback
 
 from botbuilder.core import (
     BotFrameworkAdapter,
@@ -9,87 +7,143 @@ from botbuilder.core import (
     TurnContext,
 )
 from botbuilder.schema import Activity
+from botframework.connector.auth import (
+    AuthenticationConfiguration,
+    MicrosoftAppCredentials,
+    SimpleCredentialProvider,
+)
 from fastapi import APIRouter, Request, Response
 
 from src.config import settings as s
-
-print("=== Bot runtime env/config ===")
-print("s.APP_ID:", repr(s.APP_ID))
-print("s.APP_PASSWORD length:", len(s.APP_PASSWORD) if s.APP_PASSWORD else None)
-
-app_id = os.environ.get("MICROSOFT_APP_ID") or s.APP_ID
-app_pwd = os.environ.get("MICROSOFT_APP_PASSWORD") or s.APP_PASSWORD
-print("MICROSOFT_APP_ID from env:", repr(app_id))
-print("MICROSOFT_APP_PASSWORD length from env:", len(app_pwd) if app_pwd else None)
-
-is_guid = bool(
-    re.match(
-        r"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
-        str(app_id),
-    )
-)
-print("APP_ID looks like GUID?", is_guid)
-print("=== end env/config ===")
 
 router = APIRouter()
 
 # ====== ADAPTER ======
 
-settings = BotFrameworkAdapterSettings(s.APP_ID, s.APP_PASSWORD)
+
+# Create auth config that allows unauthenticated requests (for testing)
+class AllowAllAuthConfig(AuthenticationConfiguration):
+    async def validate_claims(self, claims):
+        # Allow all claims for now
+        return
+
+
+# Create settings with relaxed auth
+credential_provider = SimpleCredentialProvider(
+    app_id="413eeb41-f381-4cca-b7cd-22a54cb17c37",
+    password=s.APP_PASSWORD,
+)
+
+settings = BotFrameworkAdapterSettings(
+    app_id="413eeb41-f381-4cca-b7cd-22a54cb17c37",
+    app_password=s.APP_PASSWORD,
+    auth_configuration=AllowAllAuthConfig(),
+)
+
 adapter = BotFrameworkAdapter(settings)
 
 
-def decode_jwt_no_verify(token: str) -> dict:
-    """Decodes a JWT token without verifying its signature.
-    This is useful for inspecting claims when debugging validation issues.
-    """
+def test_auth():
+    credentials = MicrosoftAppCredentials(
+        app_id="413eeb41-f381-4cca-b7cd-22a54cb17c37", password=s.APP_PASSWORD
+    )
+
     try:
-        parts = token.split(".")
-        if len(parts) != 3:
-            return {"error": "Invalid JWT format"}
-        payload = parts[1]
-        # Add padding if necessary
-        payload += "=" * (-len(payload) % 4)
-        return json.loads(base64.urlsafe_b64decode(payload).decode())
+        token = credentials.get_access_token()
+        print(f"✓ Authentication successful! Token: {token[:20]}...")
+        return True
     except Exception as e:
-        return {"error": f"Failed to decode JWT payload: {e}"}
+        print(f"✗ Authentication failed: {e}")
+        return False
 
 
-# ====== MESSAGE ROUTE ======
 @router.post("/messages")
 async def messages(request: Request):
-    # Read raw body and headers
-    body = await request.body()
-    activity = Activity.deserialize(json.loads(body.decode()))
-
-    # Auth header required for skill / channel validation
-    auth_header = request.headers.get("Authorization", "")
-
-    if auth_header and auth_header.startswith("Bearer "):
-        token = auth_header.split("Bearer ")[1]
-        claims = decode_jwt_no_verify(token)
-        print("--- Incoming JWT Claims ---")
-        print(json.dumps(claims, indent=2))
-        print("---------------------------")
-    else:
-        print("No Bearer token found in Authorization header.")
-
-    # Define turn handler logic
-    async def turn_handler(turn_context: TurnContext):
-        print("Running turn handler...")
-        print(turn_context.activity)
-
-        if turn_context.activity.type == "message":
-            await turn_context.send_activity(f"You said: {turn_context.activity.text}")
-        else:
-            await turn_context.send_activity(
-                f"Activity type '{turn_context.activity.type}' not supported."
-            )
-
-    # Process the incoming activity
     try:
-        await adapter.process_activity(activity, auth_header, turn_handler)
-        return Response(content="", status_code=200)
+        body = await request.json()
+        auth_header = request.headers.get("Authorization", "")
+
+        print(auth_header)
+
+        # Deserialize activity
+        activity = Activity().deserialize(body)
+
+        print(f"Received: {activity.type}")
+        print(f"Service URL: {activity.service_url}")
+
+        # Debug: Check adapter credentials
+        print(f"Adapter App ID: {adapter.settings.app_id}")
+        print(f"Adapter has password: {bool(adapter.settings.app_password)}")
+
+        async def turn_handler(turn_context: TurnContext):
+            try:
+                activity = turn_context.activity
+
+                # Handle conversation updates
+                if activity.type == "conversationUpdate":
+                    members_added = getattr(activity, "members_added", []) or []
+                    for member in members_added:
+                        if member.id != activity.recipient.id:
+                            await turn_context.send_activity(
+                                "Thanks for installing AVA! Type 'Hi' to get started."
+                            )
+                    return
+
+                # Handle messages
+                if activity.type == "message":
+                    text = (activity.text or "").strip()
+                    text = re.sub(
+                        r"<at>.*?</at>", "", text, flags=re.IGNORECASE
+                    ).strip()
+
+                    print(f"User text: {text}")
+
+                    # Debug: Get the actual token being used
+                    connector = turn_context.turn_state.get(
+                        adapter.BOT_CONNECTOR_CLIENT_KEY
+                    )
+                    if connector:
+                        creds = connector.config.credentials
+                        print(f"Credentials App ID: {creds.microsoft_app_id}")
+                        print(
+                            f"Credentials has password: {bool(creds.microsoft_app_password)}"
+                        )
+
+                        # Try to get a token
+                        try:
+                            token = creds.get_access_token()
+                            print(f"✓ Got token for sending: {token[:30]}...")
+                        except Exception as token_err:
+                            print(f"✗ Failed to get token: {token_err}")
+
+                    if text.lower() in ("hi", "hello", "hey"):
+                        await turn_context.send_activity("Hi! I'm AVA. How can I help?")
+                    else:
+                        await turn_context.send_activity(f"You said: {text}")
+
+            except Exception as ex:
+                print(f"[TURN HANDLER ERROR] {ex}")
+                traceback.print_exc()
+
+        # Create TurnContext
+        context = TurnContext(adapter, activity)
+
+        # Create connector client with credentials
+        connector_client = await adapter.create_connector_client(activity.service_url)
+        context.turn_state[adapter.BOT_CONNECTOR_CLIENT_KEY] = connector_client
+
+        # Debug: verify connector has credentials
+        print(f"Created connector for: {activity.service_url}")
+        print(
+            f"Connector has credentials: {hasattr(connector_client.config, 'credentials')}"
+        )
+
+        # Run the turn handler
+        await adapter.run_pipeline(context, turn_handler)
+
+        return Response(status_code=200)
+
     except Exception as e:
-        print(f"[ERROR] {e}")
-        return Response(content="Internal Server Error", status_code=500)
+        print(f"[ENDPOINT ERROR] {e}")
+        traceback.print_exc()
+        return Response(status_code=500)

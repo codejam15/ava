@@ -11,7 +11,7 @@ from src.routes import bot
 async def lifespan(app: FastAPI):
     # NOTE: This is where you can add your own startup logic.👇
     try:
-        ...
+        bot.test_auth()
         yield
     finally:
         ...
