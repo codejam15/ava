@@ -12,7 +12,7 @@ from src.routes.bot_routes import router
 async def lifespan(app: FastAPI):
     # NOTE: This is where you can add your own startup logic.👇
     try:
-        bot.test_auth()
+        # bot.test_auth()
         yield
     finally:
         ...
@@ -31,7 +31,7 @@ def create_app():
     register_middlewares(app)
 
     # Register routers here.
-    app.include_router(bot.router, prefix=f"{s.API_PREFIX}/bot", tags=["bot"])
+    # app.include_router(bot.router, prefix=f"{s.API_PREFIX}/bot", tags=["bot"])
     app.include_router(
         bot_routes.router, prefix=f"{s.API_PREFIX}/transcript", tags=["processing"]
     )

@@ -1,7 +1,9 @@
-from sqlmodel import select
+from uuid import UUID
+
+from sqlmodel import desc, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from .schema import (
+from src.db.schema import (
     FeedbackEvent,
     FeedbackResponse,
     Meeting,
@@ -11,18 +13,17 @@ from .schema import (
     Team,
     User,
 )
-from ..models.feedback import (
-    FeedbackEventCreateRequest,
-    FeedbackResponseCreateRequest,
-    PersonalityProfileCreateRequest,
-    PersonalityProfileUpdateRequest,
+from src.models.feedback import (
+    FeedbackEventModel,
+    FeedbackResponseModel,
+    PersonalityProfileModel,
 )
-from ..models.meeting import (
+from src.models.meeting import (
     MeetingCreateRequest,
     MeetingSummaryCreateRequest,
     MeetingTranscriptCreateRequest,
 )
-from ..models.team import TeamCreateRequest, UserCreateRequest
+from src.models.team import TeamCreateRequest, UserCreateRequest
 
 
 class UserDao:
@@ -37,9 +38,12 @@ class UserDao:
         await self._session.commit()
         return user
 
-    async def get_user_by_username(self, username: str) -> User | None:
+    async def get_user_by_username(self, username: str) -> User:
         result = await self._session.exec(select(User).where(User.username == username))
         user = result.first()
+
+        if not user:
+            raise Exception("User not found")
         return user
 
     async def delete_user(self, username: str) -> None:
@@ -118,6 +122,20 @@ class MeetingTranscriptDAO:
     def __init__(self, session: AsyncSession):
         self._session = session
 
+    async def get_latest_transcript(self) -> MeetingTranscript:
+        stmt = (
+            select(MeetingTranscript)
+            .order_by(desc(MeetingTranscript.created_at))
+            .limit(1)
+        )
+        result = await self._session.exec(stmt)
+        transcript = result.first()
+
+        if transcript is None:
+            raise RuntimeError("No transcripts found")
+
+        return transcript
+
     async def get_transcript_by_id(
         self, transcript_id: str
     ) -> MeetingTranscript | None:
@@ -187,9 +205,7 @@ class FeedbackEventDAO:
         feedback = result.first()
         return feedback
 
-    async def insert_feedback(
-        self, feedback_data: FeedbackEventCreateRequest
-    ) -> FeedbackEvent:
+    async def insert_feedback(self, feedback_data: FeedbackEventModel) -> FeedbackEvent:
         feedback_dict = feedback_data.model_dump(exclude={"id"})
         feedback = FeedbackEvent(**feedback_dict)
         self._session.add(feedback)
@@ -218,7 +234,7 @@ class FeedbackResponseDAO:
         return response
 
     async def insert_response(
-        self, response_data: FeedbackResponseCreateRequest
+        self, response_data: FeedbackResponseModel
     ) -> FeedbackResponse:
         response_dict = response_data.model_dump(exclude={"id"})
         response = FeedbackResponse(**response_dict)
@@ -240,15 +256,18 @@ class PersonalityProfileDAO:
     def __init__(self, session: AsyncSession):
         self._session = session
 
-    async def get_profile_by_id(self, profile_id: str) -> PersonalityProfile | None:
+    async def get_profile_by_id(self, profile_id: UUID) -> PersonalityProfile:
         result = await self._session.exec(
-            select(PersonalityProfile).where(PersonalityProfile.id == profile_id)
+            select(PersonalityProfile).where(PersonalityProfile.user_id == profile_id)
         )
         profile = result.first()
+
+        if not profile:
+            raise Exception("Personality Profile not found")
         return profile
 
     async def insert_profile(
-        self, profile_data: PersonalityProfileCreateRequest
+        self, profile_data: PersonalityProfileModel
     ) -> PersonalityProfile:
         profile_dict = profile_data.model_dump(exclude={"id"})
         profile = PersonalityProfile(**profile_dict)
@@ -256,7 +275,7 @@ class PersonalityProfileDAO:
         await self._session.commit()
         return profile
 
-    async def delete_profile(self, profile_id: str) -> None:
+    async def delete_profile(self, profile_id: UUID) -> None:
         profile = await self.get_profile_by_id(profile_id)
 
         if not profile:
@@ -266,7 +285,7 @@ class PersonalityProfileDAO:
         await self._session.commit()
 
     async def update_profile(
-        self, profile_id: str, profile_data: PersonalityProfileUpdateRequest
+        self, profile_id: UUID, profile_data: PersonalityProfileModel
     ) -> PersonalityProfile:
         profile = await self.get_profile_by_id(profile_id)
         if not profile:
