@@ -23,8 +23,8 @@ from src.db.schema import Team, User, PersonalityProfile
 router = APIRouter()
 
 
-@router.get("/teamsummary")
-async def team_summary_endpoint():
+@router.get("/teamsummary/{team_name}")
+async def team_summary_endpoint(team_name: str, session: AsyncSession = Depends(get_session)):
     # async def teamSummary(transcript: str, start_time: datetime) -> str:
     start_time = datetime.now(timezone.utc) - timedelta(hours=1)
     end_time = datetime.now(timezone.utc)
@@ -40,7 +40,11 @@ async def team_summary_endpoint():
     response: AgentRunResult[MeetingResponseModel] = await summary_agent.run(prompt)
 
     # call daniel's method which will make the confluence page and it will return the url
-    url = createPage(response.output)
+    team_dao: TeamDao = TeamDao(session)
+    team: Team | None = await team_dao.get_team_by_name(team_name)
+    if team is None:
+        raise Exception("team does not exist")
+    url = createPage(team, response.output)
 
     # call my function which will take the url and the summary from the llm response and build the teams message
     teams_message = buildTeamsFeedbackMessage(url, response.output.group_feedback)

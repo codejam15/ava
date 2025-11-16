@@ -72,6 +72,13 @@ class TeamDao:
         result = await self._session.exec(select(Team).where(Team.id == team_id))
         team = result.first()
         return team
+    
+    async def get_team_by_name(self, team_name: str) -> Team | None:
+        result = await self._session.exec(select(Team).where(Team.name == team_name))
+        if not result:
+            raise Exception("Team does not exist")
+        team = result.first()
+        return team
 
     async def delete_team(self, team_id: str) -> None:
         team = await self.get_team_by_id(team_id)
