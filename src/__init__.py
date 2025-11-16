@@ -3,8 +3,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 import src.routes as r
-from src.bot.main import client
 from src.config import settings as s
+from src.discord_bot import client
 from src.middlewares import register_middlewares
 
 
@@ -14,6 +14,8 @@ async def lifespan(app: FastAPI):
     try:
         print("Starting up the Discord bot...")
         # client.run(s.BOT_TOKEN)
+
+        await r.some_database_function()
         yield
     finally:
         ...
