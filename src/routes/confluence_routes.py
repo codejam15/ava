@@ -2,10 +2,12 @@ from datetime import date
 
 import requests
 
+from src.db.schema import Team
 from src.models.meeting import MeetingResponseModel
+from src.db.dao import TeamDao
 
 
-def createPage(model: MeetingResponseModel) -> str:
+def createPage(team: Team, model: MeetingResponseModel) -> str:
     today = date.today()
     # --- Confluence API info ---
     base_url = "https://zaatarfluence.atlassian.net/wiki/api/v2/pages"
@@ -14,8 +16,9 @@ def createPage(model: MeetingResponseModel) -> str:
         "ATATT3xFfGF0WUsHWadDCwKXYbQz2f14ieetZ7pcgmwU935aO82zSDiHvIbkl3eavBUsJYCAfVbxeG6t0qNeY0zweb9ajSDyK_7wp-MMfNSLDZb2XTjBVnTxwtlvYesEtafK-oNbBpFPHvkhfqilxr1kSjwUhKnHj3f-WExvm-XjN1ugxSNnH5s=DC769044",
     )
     space_key = "MFS"
-    space_id: str = "65702"
-    parent_id: str = "360497"
+    
+    space_id: str = team.space_id
+    parent_id: str = team.parent_id
     page_title: str = "Meeting of " + today.strftime("%B %d, %Y")
 
     # --- Meeting info ---
