@@ -1,3 +1,4 @@
+import asyncio
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -12,13 +13,12 @@ from src.middlewares import register_middlewares
 async def lifespan(app: FastAPI):
     # NOTE: This is where you can add your own startup logic.👇
     try:
-        print("Starting up the Discord bot...")
-        # client.run(s.BOT_TOKEN)
-
-        await r.some_database_function()
+        app.state.bot_task = asyncio.create_task(client.start(s.BOT_TOKEN))
         yield
     finally:
-        ...
+        print("Shutting down the Discord bot...")
+        await client.close()
+        app.state.bot_task.cancel()
 
 
 def create_app():

@@ -2,6 +2,7 @@ import uuid
 from datetime import date, datetime, timezone
 
 from fastapi import APIRouter, Depends
+from openai import BaseModel
 from pydantic_ai import AgentRunResult
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -19,22 +20,27 @@ from src.models.team import TeamCreateRequest, UserCreateRequest
 router = APIRouter()
 
 
+class MinutesRequestModel(BaseModel):
+    transcript: str
+    start_time: str
+    team_name: str
+    attendees: dict[str, str]
+
+
 @router.post("/generateminutes")
 async def generate_meeting_minutes(
-    transcript: str,
-    start_time,
-    team_name: str,
-    attendees: dict[str, str],
+    request: MinutesRequestModel,
     session: AsyncSession = Depends(get_session),
 ):
+    start_time = datetime.fromisoformat(request.start_time)
     end_time = datetime.now(timezone.utc)
 
     prompt = TranscriptPrompt.generate_prompt(
         TranscriptPromptModel(
-            transcript=transcript,
-            meeting_date=date.fromtimestamp(start_time.timestamp()).isoformat(),
+            transcript=request.transcript,
+            meeting_date=start_time.isoformat(),
             meeting_time=f"{start_time.isoformat()} to {end_time.isoformat()}",
-            attendees = list(attendees.keys())
+            attendees=list(request.attendees.keys()),
         )
     )
 
@@ -44,7 +50,7 @@ async def generate_meeting_minutes(
 
     # Mahan defined these idk where to get them from
     team_dao: TeamDao = TeamDao(session)
-    team: Team | None = await team_dao.get_team_by_name(team_name)
+    team: Team | None = await team_dao.get_team_by_name(request.team_name)
     if team is None:
         raise Exception("team does not exist")
     url = post_confluence_page(team, response.output)
