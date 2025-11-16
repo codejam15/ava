@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 
 import requests
 
+from src.config import settings as s
 from src.db.schema import Team
 from src.models.meeting import MeetingResponseModel
 
@@ -29,10 +30,7 @@ Best regards,
 def post_confluence_page(team: Team, model: MeetingResponseModel) -> str:
     # --- Confluence API info ---
     base_url = "https://zaatarfluence.atlassian.net/wiki/api/v2/pages"
-    auth = (
-        "maalekianmahan@gmail.com",
-        "ATATT3xFfGF0WUsHWadDCwKXYbQz2f14ieetZ7pcgmwU935aO82zSDiHvIbkl3eavBUsJYCAfVbxeG6t0qNeY0zweb9ajSDyK_7wp-MMfNSLDZb2XTjBVnTxwtlvYesEtafK-oNbBpFPHvkhfqilxr1kSjwUhKnHj3f-WExvm-XjN1ugxSNnH5s=DC769044",
-    )
+    auth = ("maalekianmahan@gmail.com", s.CONFLUENCE_SECRET)
     space_key = "MFS"
 
     space_id: str = team.space_id

@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 
     # API Keys
     OPENAI_API_KEY: str
+    CONFLUENCE_SECRET: str
 
     # Bot Configuration
     BOT_TOKEN: str
