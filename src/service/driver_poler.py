@@ -119,7 +119,7 @@ def poll_drive_changes():
     else:
         print(f"✅ Loaded page token: {page_token}\n")
 
-    print(f"🔍 Starting to poll for changes...\n")
+    print("🔍 Starting to poll for changes...\n")
 
     poll_count = 0
 
