@@ -2,7 +2,7 @@ from zipfile import ZipFile
 import os
 import re
 
-def unzip_file(file_name: str | None):
+def unzip_file(file_name: str | None, download_dir: str):
 
     if not file_name:
         return None
@@ -11,9 +11,9 @@ def unzip_file(file_name: str | None):
         # List all files in the archive to identify desired members
 
         # Extract a specific file
-        transcription = zip_object.extract('transcription.txt')
+        transcription = zip_object.extract('transcription.txt', download_dir)
         # Extract another specific file to a different location
-        info = zip_object.extract('info.txt')
+        info = zip_object.extract('info.txt', download_dir)
         try:
             with open(transcription, 'r') as file:
                 transcript = file.read()
@@ -38,10 +38,16 @@ def unzip_file(file_name: str | None):
                     name, id = pair.split(" ")
                     user_dict[name] = id[1:-1]
 
+                # Extract team name
+                team_name = re.search(r"Guild:\s+(.*)?\s\(", text)
+
+                if team_name:
+                    team_name = team_name.group(1)
+
                 print("Start time:", start_time)
                 print("Clean Dict:", user_dict, flush=True)
 
-            return (transcript, start_time, user_dict)
+            return (transcript, start_time, user_dict, team_name)
         except FileNotFoundError:
             print(f"Error: The file was not found.")
         except Exception as e:

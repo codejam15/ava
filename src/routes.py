@@ -19,12 +19,12 @@ from src.models.team import TeamCreateRequest, UserCreateRequest
 router = APIRouter()
 
 
-@router.post("/generate/{team_name}")
+@router.post("/generateminutes")
 async def generate_meeting_minutes(
     transcript: str,
     start_time,
-    attendees: dict[str, str],
     team_name: str,
+    attendees: dict[str, str],
     session: AsyncSession = Depends(get_session),
 ):
     end_time = datetime.now(timezone.utc)
@@ -34,12 +34,15 @@ async def generate_meeting_minutes(
             transcript=transcript,
             meeting_date=date.fromtimestamp(start_time.timestamp()).isoformat(),
             meeting_time=f"{start_time.isoformat()} to {end_time.isoformat()}",
+            attendees = list(attendees.keys())
         )
     )
 
     response: AgentRunResult[MeetingResponseModel] = await summary_agent.run(prompt)
 
     # call daniel's method which will make the confluence page and it will return the url
+
+    # Mahan defined these idk where to get them from
     team_dao: TeamDao = TeamDao(session)
     team: Team | None = await team_dao.get_team_by_name(team_name)
     if team is None:

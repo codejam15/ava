@@ -29,7 +29,7 @@ class TranscriptPromptModel(BaseModel):
     transcript: str
     meeting_date: str
     meeting_time: str
-    attendees: Optional[str] = None
+    attendees: Optional[list[str]] = None
 
 
 class MeetingSummaryCreateRequest(BaseModel):

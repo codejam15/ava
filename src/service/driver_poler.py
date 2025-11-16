@@ -144,16 +144,22 @@ def process_changes(creds, changes):  # <-- ADDED 'creds'
 
                 # --- THIS IS THE NEW PART ---
                 file_path = download_file(creds, file_id, name)
-                info = unzip_file(file_path)
+                info = unzip_file(file_path, DOWNLOAD_DIR)
 
                 if info is None:
                     return None
 
-                (transcript, start_time, attendees) = info
+                (transcript, start_time, attendees, team_name) = info
+
+                request_body = {
+                    "transcript": transcript,
+                    "start_time": start_time,
+                    "team_name": team_name,
+                    "attendees": attendees
+                }
 
                 # Needs to be a request.
-                requests.get("http://localhost:8000/generate/")
-                # generate_meetingminutes(transcript, start_time, attendees)
+                requests.post(f"http://localhost:8000/generateminutes", json=request_body)
 
                 # ----------------------------
 
