@@ -32,6 +32,9 @@ class FeedbackResponseModel(BaseModel):
 
 class PersonalityProfileModel(BaseModel):
     user_id: uuid.UUID = Field(description="The unique identifier of the user.")
+    profile_id: uuid.UUID = Field(
+        description="The unique identifier of the personality profile."
+    )
     summary: str = Field(
         description="A brief summary of the user's personality, this is based on analysis of their previous responses to feedback."
     )
